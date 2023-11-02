@@ -20,7 +20,11 @@
 
 sql_create_favorite_foods = """
 
-Your SQL here.
+CREATE TABLE favorite_foods (
+    food_id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL,
+    vegetarian INTEGER NOT NULL
+);
 
 """
 
@@ -28,18 +32,26 @@ Your SQL here.
 # Alter the animals and people tables by adding a new column to each called 'favorite_food_id'
 # The test suite will verify the new changes by inserting some new rows. 
 
-sql_alter_tables_with_favorite_food = """
+#Tried adding a FK, found the hard way sqlite3 does not support adding FK on alter tables ...
 
-Your SQL here.
+sql_alter_tables_with_favorite_food = """
+ALTER TABLE people 
+ADD favorite_food_id INTEGER;
+
+
+ALTER TABLE animals
+ADD favorite_food_id INTEGER;
 
 """
-
 # Part 5.C:
 # Write a query to select all pets that are vegetarian.
 # THe output should be a list of tuples in the format: (<pet name>, <food name>)
 
 sql_select_all_vegetarian_pets = """
 
-Your SQL here.
+SELECT a.name, ff.name
+FROM animals a, favorite_foods ff
+WHERE a.favorite_food_id == ff.food_id
+AND ff.vegetarian = 1;
 
 """
