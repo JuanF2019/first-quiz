@@ -29,8 +29,8 @@ For each one thats relevant i will check the following in the application, based
 3.  Injection: Check that every user input or URL is pre processed before sending a request to the API.
 4.  Insecure Design: Check the app design and verify that secure design patterns are used. Make sure that test are deseigned and implemented to check critical points like authentication and access api and database.
 5.  Security Misconfiguration: Check that error message the end user can receive do not contain critical information from the system. Disable unnecesarry or unused features. Make sure that security features used during access and authentication are properly setup.
-6. Vulnerable and Outdated components: Verify that only components (i.e. dependencies from package managers like npm) are from trusted sources. Verify that all components have the latest security updates and there no critical vulnerabilities reported for used dependencies.
-7. Identification and Authentication failures
-8. Software and Data Integrity Failures
-9. Security Logging and Monitoring Failures
-10. Server-Side Request Forgery
+6. Vulnerable and Outdated components: Verify that all components have the latest security updates and there no critical vulnerabilities reported for used dependencies.
+7. Identification and Authentication failures: Prevent brute force attacks by limiting the number of request the api can receive from the same IP address. Make sure the token expire time is short and that the token is invalidated when the user logs out.
+8. Software and Data Integrity Failures: Verify that libraries (i.e. dependencies from package managers like npm) are from trusted sources.
+9. Security Logging and Monitoring Failures: Verify that security relevant events are logged with sufficient details to detect suspicous activity. 
+10. Server-Side Request Forgery: Verify that the URL that a user request is validated before sending the request, preventing the access to unathorized locations.
