@@ -1,0 +1,352 @@
+diff --git a/part1/question1.py b/part1/question1.py
+index 5c99fdb..874d8c2 100644
+--- a/part1/question1.py
++++ b/part1/question1.py
+@@ -20,16 +20,23 @@ def get_city_temperature(city):
+       return 17
+    if city == "San Francisco":
+       return 16
++   if city == "New York":
++      return 14
++   return 0
+ 
+ def get_city_weather(city):
+ 
+-  sky_condition = None
++   sky_condition = None
+ 
+-  if city == "Sao Paulo":
++   if city == "Sao Paulo":
+      sky_condition = "cloudy"
+-  elif city == "New York":
++   elif city == "New York":
+      sky_condition = "rainy"
++   elif city == "Quito":
++      sky_condition = "sunny"
++   else:
++      sky_condition = "unknown"
+ 
+-  temperature = get_city_temperature(city)
++   temperature = get_city_temperature(city)
+ 
+-  return str(temperature) + " degrees and " + sky_condition
+\ No newline at end of file
++   return str(temperature) + " degrees and " + sky_condition
+\ No newline at end of file
+diff --git a/part1/question2.py b/part1/question2.py
+index 34a9b01..cc6be34 100644
+--- a/part1/question2.py
++++ b/part1/question2.py
+@@ -15,7 +15,10 @@
+ # it. As always, there is a test suite that checks the result. It is in 
+ # `question2_test.py.`
+ 
+-swapper = None
++def swap_pair(pair):
++  return (pair[1],pair[0])
++
++swapper = swap_pair
+ 
+ def run_swapper(list_of_tuples):
+   return list(map(swapper, list_of_tuples))
+\ No newline at end of file
+diff --git a/part1/question3.py b/part1/question3.py
+index 04fab99..6f35241 100644
+--- a/part1/question3.py
++++ b/part1/question3.py
+@@ -25,9 +25,37 @@
+ # The `alchemy_combine()` function will use your oven. You can see the expected 
+ # formulas and their outputs in the test file, `question3_test.py`.
+ 
++class Oven():
++
++  ingredients = []
++  output = "no output"
++
++  def add(self,item):
++    self.ingredients.append(item)
++
++  def freeze(self):
++    if (("water" in self.ingredients) and ("air" in self.ingredients)):
++      self.output = "snow"
++  
++  def boil(self):
++    if (("cheese" in self.ingredients) and ("dough" in self.ingredients) and ("tomato")):
++      self.output = "pizza"
++      return
++    if (("lead" in self.ingredients) and ("mercury" in self.ingredients)):
++      self.output = "gold"
++    
++  def wait(self):
++    self.output = "unknown"
++
++  def get_output(self):
++    output = self.output
++    self.output = "no output"
++    self.ingredients = []
++    return output
++
+ # This function should return an oven instance!
+ def make_oven():
+-  None
++  return Oven()
+ 
+ def alchemy_combine(oven, ingredients, temperature):
+   
+diff --git a/part1/question3_test.py b/part1/question3_test.py
+index 6cb6c89..0dee4e2 100644
+--- a/part1/question3_test.py
++++ b/part1/question3_test.py
+@@ -1,3 +1,5 @@
++from question3 import make_oven, alchemy_combine
++
+ def test_alchemy_combine():
+ 
+   assert alchemy_combine(
+diff --git a/part1/question4.py b/part1/question4.py
+index 1e1b2bf..687ac31 100644
+--- a/part1/question4.py
++++ b/part1/question4.py
+@@ -24,7 +24,9 @@ import pets_db
+ 
+ sql_pets_owned_by_nobody = """
+ 
+-Your SQL here.
++SELECT name,species,age FROM animals WHERE animals.animal_id NOT IN (
++    SELECT DISTINCT(pet_id) FROM people_animals
++);
+ 
+ """
+ 
+@@ -34,15 +36,31 @@ Your SQL here.
+ 
+ sql_pets_older_than_owner = """
+ 
+-Your SQL here.
++SELECT COUNT(*) FROM (
++    SELECT MAX(p.age) AS p_min_age, a.age AS pet_age
++    FROM people p, people_animals pa, animals a
++    WHERE p.person_id = pa.owner_id
++    AND a.animal_id == pa.pet_id
++    GROUP BY a.animal_id
++) AS owner_min_age_and_pet_age
++WHERE owner_min_age_and_pet_age.pet_age > owner_min_age_and_pet_age.p_min_age;
+ 
+ """
+ 
+ # Part 4.C: BONUS CHALLENGE! 
+ # Write SQL to select the pets that are owned by Bessie and nobody else.
+ # The output should be a list of tuples in the format: (<person name>, <pet name>, <species>)
+-sql_only_owned_by_bessie = """ 
+-
+-Your SQL here.
+-
++sql_only_owned_by_bessie = """
++    SELECT p.name, a.name, a.species
++    FROM people p, people_animals pa, animals a
++    WHERE p.person_id = pa.owner_id
++    AND a.animal_id == pa.pet_id
++    AND p.name = "bessie"
++    AND a.animal_id NOT IN (
++        SELECT a2.animal_id
++        FROM people p2, people_animals pa2, animals a2
++        WHERE p2.person_id = pa2.owner_id
++        AND a2.animal_id == pa2.pet_id 
++        AND p2.name <> "bessie"
++    );
+ """
+\ No newline at end of file
+diff --git a/part1/question5.py b/part1/question5.py
+index f76654f..57ca630 100644
+--- a/part1/question5.py
++++ b/part1/question5.py
+@@ -20,7 +20,11 @@
+ 
+ sql_create_favorite_foods = """
+ 
+-Your SQL here.
++CREATE TABLE favorite_foods (
++    food_id INTEGER PRIMARY KEY,
++    name TEXT NOT NULL,
++    vegetarian INTEGER NOT NULL
++);
+ 
+ """
+ 
+@@ -28,18 +32,26 @@ Your SQL here.
+ # Alter the animals and people tables by adding a new column to each called 'favorite_food_id'
+ # The test suite will verify the new changes by inserting some new rows. 
+ 
++#Tried adding a FK, found the hard way sqlite3 does not support adding FK on alter tables ...
++
+ sql_alter_tables_with_favorite_food = """
++ALTER TABLE people 
++ADD favorite_food_id INTEGER;
+ 
+-Your SQL here.
+ 
+-"""
++ALTER TABLE animals
++ADD favorite_food_id INTEGER;
+ 
++"""
+ # Part 5.C:
+ # Write a query to select all pets that are vegetarian.
+ # THe output should be a list of tuples in the format: (<pet name>, <food name>)
+ 
+ sql_select_all_vegetarian_pets = """
+ 
+-Your SQL here.
++SELECT a.name, ff.name
++FROM animals a, favorite_foods ff
++WHERE a.favorite_food_id == ff.food_id
++AND ff.vegetarian = 1;
+ 
+ """
+\ No newline at end of file
+diff --git a/part1/quiz_pets b/part1/quiz_pets
+new file mode 100644
+index 0000000..a1c7be9
+Binary files /dev/null and b/part1/quiz_pets differ
+diff --git a/part2/src/main/java/org/velezreyes/quiz/question6/Drink.java b/part2/src/main/java/org/velezreyes/quiz/question6/Drink.java
+index 61c1fdd..832cbfb 100644
+--- a/part2/src/main/java/org/velezreyes/quiz/question6/Drink.java
++++ b/part2/src/main/java/org/velezreyes/quiz/question6/Drink.java
+@@ -4,4 +4,6 @@ public interface Drink {
+   public String getName();
+ 
+   public boolean isFizzy();
++
++  public int getPrice();
+ }
+\ No newline at end of file
+diff --git a/part2/src/main/java/org/velezreyes/quiz/question6/DrinkImpl.java b/part2/src/main/java/org/velezreyes/quiz/question6/DrinkImpl.java
+new file mode 100644
+index 0000000..7f2bf01
+--- /dev/null
++++ b/part2/src/main/java/org/velezreyes/quiz/question6/DrinkImpl.java
+@@ -0,0 +1,30 @@
++package org.velezreyes.quiz.question6;
++
++public class DrinkImpl implements Drink{
++
++    private String name;
++    private boolean isFizzy;
++    private int price;
++
++    public DrinkImpl(String name, boolean isFizzy, int price){
++        this.name = name;
++        this.isFizzy = isFizzy;
++        this.price = price;
++    }
++
++    @Override
++    public String getName() {
++        return name;
++    }
++
++    @Override
++    public boolean isFizzy() {
++        return isFizzy;
++    }
++
++    @Override
++    public int getPrice() {
++        return price;
++    }
++    
++}
+diff --git a/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java b/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java
+index 85742c4..f174a23 100644
+--- a/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java
++++ b/part2/src/main/java/org/velezreyes/quiz/question6/VendingMachineImpl.java
+@@ -1,9 +1,44 @@
+ package org.velezreyes.quiz.question6;
+ 
+-public class VendingMachineImpl {
++import java.util.HashMap;
++import java.util.Map;
++
++public class VendingMachineImpl implements VendingMachine{
++
++  private int numQuarters;
++  private Map<String,Drink> drinks;
++
++  private VendingMachineImpl(){
++    numQuarters = 0;
++    drinks = new HashMap<>();
++    drinks.put("ScottCola", new DrinkImpl("ScottCola",true,3));
++    drinks.put("KarenTea", new DrinkImpl("KarenTea",false,4));
++  }
+ 
+   public static VendingMachine getInstance() {
+-    // Fix me!
+-    return null;
++    return new VendingMachineImpl();
++  }
++
++  @Override
++  public void insertQuarter() {
++    numQuarters++;    
++  }
++
++  @Override
++  public Drink pressButton(String name) throws NotEnoughMoneyException, UnknownDrinkException {
++    if(!drinks.containsKey(name)) throw new UnknownDrinkException();
++
++    Drink drink = drinks.get(name);
++
++    if(numQuarters < drink.getPrice()) throw new NotEnoughMoneyException();
++
++    giveChange();
++
++    return drink;        
++  }
++
++  private void giveChange(){
++    //gives change
++    numQuarters = 0;
+   }
+ }
+diff --git a/part3/security_question.md b/part3/security_question.md
+new file mode 100644
+index 0000000..6075f00
+--- /dev/null
++++ b/part3/security_question.md
+@@ -0,0 +1,36 @@
++Before looking on OWASP Top 10 i would first check the connections between different modules of the whole system. I would check the following.
++
++- Connection between FastAPI back and database
++- Connection between Web Front and Mobile App with API
++
++I would make sure that:
++
++- Access to database is protected using authentication and that ONLY the database administrator (one of the sw engineers) can directly access it and make modifications to it.
++- Access to the API is protected by an authentication mechanism, for example, JSON web tokens. And that the corresponding users (clients, sw engineers, support employess and sales employeess) have only the permissions they should have.
++- That the input received from the front and sent to back is processed to prevent any form of code injection, specially SQL injection.
++
++After that i would look into OWASP Top 10 for year 2021 (as stated in the question). The list is the following:
++
++1. Broken Access Control
++2. Cryptographic failures
++3. Injection
++4. Insecure Design
++5. Security Miconfiguration
++6. Vulnerable and Outdated components
++7. Identification and Authentication failures
++8. Software and Data Integrity Failures
++9. Security Logging and Monitoring Failures
++10. Server-Side Request Forgery
++
++For each one thats relevant i will check the following in the application, based on the description of each vulnerability as provided in owasp.org page:
++
++1. Broken Access Control: Check that users have only the permissions they should have, check that that access to other users data is protected, meaning, the user can only access its data. Check that unauthenticated users cannot access any data from the Web Front, Mobile App, API or database.
++2.  Cryptogtaphic Failures: Verify that the app uses secure algorithms for token generation and validation, and that they are not deprecated. Verify that data is transmitted encrypted and via a secure protocol (i.e. HTTPS).
++3.  Injection: Check that every user input or URL is pre processed before sending a request to the API.
++4.  Insecure Design: Check the app design and verify that secure design patterns are used. Make sure that test are deseigned and implemented to check critical points like authentication and access api and database.
++5.  Security Misconfiguration: Check that error message the end user can receive do not contain critical information from the system. Disable unnecesarry or unused features. Make sure that security features used during access and authentication are properly setup.
++6. Vulnerable and Outdated components: Verify that all components have the latest security updates and there no critical vulnerabilities reported for used dependencies.
++7. Identification and Authentication failures: Prevent brute force attacks by limiting the number of request the api can receive from the same IP address. Make sure the token expire time is short and that the token is invalidated when the user logs out.
++8. Software and Data Integrity Failures: Verify that libraries (i.e. dependencies from package managers like npm) are from trusted sources.
++9. Security Logging and Monitoring Failures: Verify that security relevant events are logged with sufficient details to detect suspicous activity. 
++10. Server-Side Request Forgery: Verify that the URL that a user request is validated before sending the request, preventing the access to unathorized locations.
